@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>СКЛАД: накладные</h2>
+{% for post in posts %}
+    <a href={{ url_for('items', invoiceId=post['id']) }}>
+    <h3 class="text-primary">Накладная №{{ post['id'] }} От {{ post['created'] }}</h3>
+    </a>
+    <span class="badge badge-primary">{{ post['consignee'] }}</span>
+    {% if post['status'] == 'Not issued' %}
+    <span class="badge badge-success">{{ post['status'] }}</span>
+    {% else %}
+    <span class="badge badge-danger">{{ post['status'] }}</span>
+    {% endif %}
+    {% endfor %}
+<a href={{ url_for('create') }}>
+<h4>Создать новую накладную</h4>
+</a>
+</body>
+</html>
+</html>
