@@ -8,13 +8,13 @@ app = Flask(__name__)
 app.debug = True
 bootstrap = Bootstrap(app)
 
-
+# Подключение к бд
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-
+# Функция возвращает страницу товаров выбранной накладной
 @app.route('/<int:invoiceId>')
 def items(invoiceId):
     items = get_items(invoiceId)
@@ -23,7 +23,7 @@ def items(invoiceId):
     conn.close()
     return render_template('item.html', items=items, invoiceIdRequest=invoiceId, status=status)
 
-
+# Функция возвращает список товаров выбранной накладной для странички
 def get_items(invoice_id):
     conn = get_db_connection()
     items = conn.execute('SELECT * FROM Item WHERE Invoiceid = ?',
@@ -33,7 +33,7 @@ def get_items(invoice_id):
         abort(404)
     return items
 
-
+# Изменение статуса накладной на выданную
 @app.route('/issued<int:invoiceId>', methods=['POST'])
 def issuedInvoice(invoiceId):
     conn = get_db_connection()
@@ -42,7 +42,7 @@ def issuedInvoice(invoiceId):
     conn.close()
     return redirect(url_for('index'))
 
-
+# Создает новый товар в выбранной накладной
 @app.route('/createItem<int:invoiceIdRequest>', methods=('GET', 'POST'))
 def createItem(invoiceIdRequest):
     if request.method == 'POST':
@@ -66,7 +66,7 @@ def createItem(invoiceIdRequest):
     nomen = conn.execute('SELECT * FROM Nomenclature').fetchall()
     return render_template('createItem.html', nomen=nomen, invoiceId=invoiceIdRequest)
 
-
+# Создает новую накладную
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     time = datetime.now().date()
@@ -86,7 +86,7 @@ def create():
 
     return render_template('create.html')
 
-
+# Выводит главную страницу со список всех накладных
 @app.route('/')
 def index():
     conn = get_db_connection()

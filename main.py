@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime, timezone
 connection = sqlite3.connect('database.db')
-
+# ТУТ ПРОСТО ЗАПОЛНЯЕТСЯ ДАННЫМИ БАЗА ДАННЫХ!!!!!!!
 with open('schema.sql') as f:
     connection.executescript(f.read())
 time = datetime.now().date()
