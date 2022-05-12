@@ -18,7 +18,10 @@ def get_db_connection():
 @app.route('/<int:invoiceId>')
 def items(invoiceId):
     items = get_items(invoiceId)
-    return render_template('item.html', items=items)
+    conn = get_db_connection()
+    status = conn.execute('SELECT Invoice.status FROM Invoice WHERE id = ?', (invoiceId,)).fetchone()[0]
+    conn.close()
+    return render_template('item.html', items=items, invoiceIdRequest=invoiceId, status=status)
 
 
 def get_items(invoice_id):
@@ -29,6 +32,39 @@ def get_items(invoice_id):
     if items is None:
         abort(404)
     return items
+
+
+@app.route('/issued<int:invoiceId>', methods=['POST'])
+def issuedInvoice(invoiceId):
+    conn = get_db_connection()
+    conn.execute('UPDATE Invoice SET status=? WHERE id = ?', ('Выдано', invoiceId))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
+
+
+@app.route('/createItem<int:invoiceIdRequest>', methods=('GET', 'POST'))
+def createItem(invoiceIdRequest):
+    if request.method == 'POST':
+        title = request.form['title']
+        print(title)
+        amount = int(request.form['amount'])
+        print(amount)
+
+        if not title:
+            flash('Title is required')
+        else:
+            conn = get_db_connection()
+            unit = conn.execute('SELECT Nomenclature.unit FROM Nomenclature WHERE title = ?', (title,)).fetchone()[0]
+            print(unit)
+            conn.execute('INSERT INTO Item(title,amount,unit,invoiceId) VALUES (?,?,?,?)',
+                         (title, amount, unit, invoiceIdRequest))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('items', invoiceId=invoiceIdRequest))
+    conn = get_db_connection()
+    nomen = conn.execute('SELECT * FROM Nomenclature').fetchall()
+    return render_template('createItem.html', nomen=nomen, invoiceId=invoiceIdRequest)
 
 
 @app.route('/create', methods=('GET', 'POST'))
